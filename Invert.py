@@ -1,5 +1,6 @@
 from typing import TextIO
 
+
 def search_term():
     term: str = input("Enter search term: ")
     while term.__contains__(" "):
@@ -9,34 +10,32 @@ def search_term():
 def read_file_by_line():
     file: TextIO = open("cacm.all")
     line_needed = False
-    new_doc = False
-    doc_num = ""
-    extract = False
+    extract_text = False
+    doc_num = 0
     for x in file:
         if x[0:2] == ".W":
-            extract = True
             line_needed = True
+            extract_text = True
         elif x[0:2] == ".T":
-            extract = True
             line_needed = True
+            extract_text = True
         elif x[0:2] == ".A":
             line_needed = True
-            extract = False
+            extract_text = False
         elif x[0:2] == ".B":
             line_needed = True
-            extract = False
+            extract_text = False
         elif x[0:2] == ".I":
-            new_doc = True
+            line_needed = True
             doc_num = x.strip(x[0:3])
+            print(doc_num)
+            extract_text = False
         elif x.strip('\n ') in (".X", ".C", ".K", ".N"):
             line_needed = False
-            extract = False
+            extract_text = False
         else:
-            if extract:
-                print(x)
-        if new_doc:
-            new_doc = False
-            print(doc_num)
+            if extract_text:
+               print(x)
     file.close()
 
 def use_stop_word():
