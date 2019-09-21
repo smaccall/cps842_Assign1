@@ -7,7 +7,7 @@ def search_term():
     return term
 
 def read_file_by_line():
-    file: TextIO = open("cacm.tar")
+    file: TextIO = open("cacm.all")
     line_needed = False
     new_doc = False
     doc_num = ""
@@ -28,9 +28,7 @@ def read_file_by_line():
         elif x[0:2] == ".I":
             new_doc = True
             doc_num = x.strip(x[0:3])
-            test = doc_num.split(" ", 1)
-            doc_num = test[0].rstrip("\x00")
-        elif x.strip('\n ') in (".X", ".C", ".K", ".N") or x.__contains__("Fletcher,common_words"):
+        elif x.strip('\n ') in (".X", ".C", ".K", ".N"):
             line_needed = False
             extract = False
         else:
