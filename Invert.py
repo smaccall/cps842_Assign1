@@ -1,6 +1,7 @@
 from typing import TextIO
 from string import punctuation
 import re
+import pickle
 
 def add_to_dictionary(x, d, s, doc_num, term_pos, post_list):
     temp_list = x.split()
@@ -33,7 +34,7 @@ def add_to_posting(t, doc_num, term_pos, p):
             test2 = test[doc_num]
             test2.append(term_pos)
             test[doc_num] = test2
-        except:
+        except KeyError:
             test[doc_num] = [term_pos]
     p[t] = test
     return p
@@ -98,7 +99,14 @@ dictionary = list(diction.items())
 dictionary.sort()
 posting_list = list(posting_list_unorganized.items())
 posting_list.sort()
-print(posting_list)
+
+pickle_out = open("dictionary.pickle", "wb")
+pickle.dump(dictionary, pickle_out)
+pickle_out.close()
+
+pickle_out = open("posting.pickle", "wb")
+pickle.dump(posting_list, pickle_out)
+pickle_out.close()
 
 #search: str = search_term()
 #count: int = 0
