@@ -9,14 +9,14 @@ def add_to_dictionary(x, d, s, doc_num, term_pos, post_list):
             if not(word in s):
                 term = word.strip(punctuation)
                 term = re.sub(r'[^\w\-]', '', term)
-                if not (term.isnumeric() or term.isspace() or len(term) < 1):
+                if not (term.isspace() or len(term) < 1):
                     d[term] = d.get(term, 0) + 1
     else:
         for word in temp_list:
 
             term = word.strip(punctuation)
             term = re.sub(r'[^\w\-]', '', term)
-            if not(term.isnumeric() or term.isspace() or len(term) < 1):
+            if not(term.isspace() or len(term) < 1):
                 d[term] = d.get(term, 0) + 1
                 post_list = add_to_posting(term, doc_num, term_pos, post_list)
                 term_pos += 1
