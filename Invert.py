@@ -13,9 +13,9 @@ def add_to_dictionary(x, d, s, doc_num, term_pos, post_list):
                     d[term] = d.get(term, 0) + 1
     else:
         for word in temp_list:
-
             term = word.strip(punctuation)
             term = re.sub(r'[^\w\-]', '', term)
+            term = term.lower()
             if not(term.isspace() or len(term) < 1):
                 d[term] = d.get(term, 0) + 1
                 post_list = add_to_posting(term, doc_num, term_pos, post_list)
@@ -24,17 +24,23 @@ def add_to_dictionary(x, d, s, doc_num, term_pos, post_list):
 
 # need to add document frequency as well to list
 def add_to_posting(t, doc_num, term_pos, p):
-    doc_num = doc_num.strip("\n")
-    if t in p:
-        if doc_num in p[t]:
-            pos_lis = p[t][doc_num]
-            pos_lis.append(term_pos)
-            p[t][doc_num] = pos_lis
-        else:
-            p[t][doc_num] = [term_pos]
+    p.setdefault(t, {})
+    test = p[t]
+    if len(test) < 3:
+        test[doc_num] = [term_pos]
     else:
-        p.setdefault(t, {})[doc_num] = [term_pos]
+        try:
+            test2 = test[doc_num]
+            test2.append(term_pos)
+            test[doc_num] = test2
+        except:
+            test[doc_num] = [term_pos]
+    p[t] = test
     return p
+
+def assemble_position_list():
+
+    return
 
 def search_term():
     term: str = input("Enter search term: ")
@@ -61,9 +67,8 @@ def read_file_by_line():
             extract_text = False
         elif x[0:2] == ".I":
             term_place = 0
-            line_needed = True
             doc_num = x.strip(x[0:3])
-            #print(doc_num)
+            doc_num = doc_num.strip("\n")
             extract_text = False
         elif x.strip('\n ') in (".X", ".C", ".K", ".N"):
             extract_text = False
@@ -93,7 +98,7 @@ dictionary = list(diction.items())
 dictionary.sort()
 posting_list = list(posting_list_unorganized.items())
 posting_list.sort()
-print(dictionary)
+print(posting_list)
 
 #search: str = search_term()
 #count: int = 0
