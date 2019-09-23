@@ -1,17 +1,21 @@
 from typing import TextIO
+from string import punctuation
 import re
 
-# Only no stop word works with posting list at the moment
 def add_to_dictionary(x, d, s, doc_num, term_pos, post_list):
     temp_list = x.split()
     if len(s) > 0:
         for word in temp_list:
             if not(word in s):
-                term = re.sub(r'[^\w]', '', word)
-                d[term] = d.get(term, 0) + 1
+                term = word.strip(punctuation)
+                term = re.sub(r'[^\w\-]', '', term)
+                if not (term.isnumeric() or term.isspace() or len(term) < 1):
+                    d[term] = d.get(term, 0) + 1
     else:
         for word in temp_list:
-            term = re.sub(r'[^\w]', '', word)
+
+            term = word.strip(punctuation)
+            term = re.sub(r'[^\w\-]', '', term)
             if not(term.isnumeric() or term.isspace() or len(term) < 1):
                 d[term] = d.get(term, 0) + 1
                 post_list = add_to_posting(term, doc_num, term_pos, post_list)
@@ -83,7 +87,7 @@ def use_stop_word():
     return []
 
 
-# Potentially need to find better organizatin method
+
 diction, posting_list_unorganized = read_file_by_line()
 dictionary = list(diction.items())
 dictionary.sort()
@@ -98,3 +102,4 @@ print(dictionary)
 #    print(search)
 #    search: str = search_term()
 #print("Number of Times Search Ran: ", count)
+
