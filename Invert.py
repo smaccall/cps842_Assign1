@@ -12,6 +12,8 @@ def add_to_dictionary(x, d, s, doc_num, term_pos, post_list):
                 term = re.sub(r'[^\w\-]', '', term)
                 if not (term.isspace() or len(term) < 1):
                     d[term] = d.get(term, 0) + 1
+                    post_list = add_to_posting(term, doc_num, term_pos, post_list)
+                    term_pos += 1
     else:
         for word in temp_list:
             term = word.strip(punctuation)
@@ -28,26 +30,25 @@ def add_to_posting(t, doc_num, term_pos, p):
     p.setdefault(t, {})
     test = p[t]
     if len(test) < 3:
-        test[doc_num] = [term_pos]
+        test[doc_num] = [1, [term_pos]]
     else:
         try:
             test2 = test[doc_num]
-            test2.append(term_pos)
+            test3 = test2[1]
+            test3.append(term_pos)
+            test2[1] = test3
+            freq = test2[0]
+            test2[0] = freq + 1
             test[doc_num] = test2
         except KeyError:
-            test[doc_num] = [term_pos]
+            test[doc_num] = [1, [term_pos]]
     p[t] = test
+    print (p)
     return p
 
 def assemble_position_list():
 
     return
-
-def search_term():
-    term: str = input("Enter search term: ")
-    while term.__contains__(" "):
-        term: str = input("Please enter one term with no spaces: ")
-    return term
 
 def read_file_by_line():
     d = {}
@@ -92,27 +93,16 @@ def use_stop_word():
         return stop_words
     return []
 
+def pickle_file(x, p):
+    pickle_out = open(x, "wb")
+    pickle.dump(p, pickle_out)
+    pickle_out.close()
 
-
-diction, posting_list_unorganized = read_file_by_line()
-dictionary = list(diction.items())
-dictionary.sort()
-posting_list = list(posting_list_unorganized.items())
-posting_list.sort()
-
-pickle_out = open("dictionary.pickle", "wb")
-pickle.dump(dictionary, pickle_out)
-pickle_out.close()
-
-pickle_out = open("posting.pickle", "wb")
-pickle.dump(posting_list, pickle_out)
-pickle_out.close()
-
-#search: str = search_term()
-#count: int = 0
-#while search != "ZZEND":
-#    count += 1
-#    print(search)
-#    search: str = search_term()
-#print("Number of Times Search Ran: ", count)
-
+if __name__ == "__main__":
+    diction, posting_list_unorganized = read_file_by_line()
+    dictionary = list(diction.items())
+    dictionary.sort()
+    posting_list = list(posting_list_unorganized.items())
+    posting_list.sort()
+    pickle_file("dictionary.pickle", dictionary)
+    pickle_file("posting.pickle", posting_list)
