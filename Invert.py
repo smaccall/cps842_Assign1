@@ -2,7 +2,7 @@ from typing import TextIO
 from string import punctuation
 import re
 import pickle
-import sys
+import operator
 
 class PorterStemmer:
 
@@ -164,7 +164,7 @@ class PorterStemmer:
                 ch = self.b[self.k]
                 if ch == 'l' or ch == 's' or ch == 'z':
                     self.k = self.k + 1
-            elif (self.m() == 1 and self.cvc(self.k)):
+            elif self.m() == 1 and self.cvc(self.k):
                 self.setto("e")
 
     def step1c(self):
@@ -322,7 +322,7 @@ def add_to_dictionary(x, d, s, doc_num, term_pos, post_list, stem):
         for word in temp_list:
             if not(word in s):
                 term = word.strip(punctuation)
-                term = re.sub(r'[^\w\-]', '', term)  
+                term = re.sub(r'[^\w\-]', '', term)
                 if not (term.isspace() or len(term) < 1):
                     if stem:
                         term = stemming_process(term)
@@ -438,9 +438,7 @@ def use_stemming():
 if __name__ == "__main__":
     use_stem = use_stemming()
     diction, posting_list_unorganized = read_file_by_line(use_stem)
-    dictionary = list(diction.items())
-    dictionary.sort()
-    posting_list = list(posting_list_unorganized.items())
-    posting_list.sort()
+    dictionary = dict(sorted(diction.items(), key=operator.itemgetter(0)))
+    posting_list = dict(sorted(posting_list_unorganized.items(), key=operator.itemgetter(0)))
     pickle_file("dictionary.pickle", dictionary)
     pickle_file("posting.pickle", posting_list)
