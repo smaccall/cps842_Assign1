@@ -354,7 +354,7 @@ def add_to_dictionary(x, d, s, doc_num, term_pos, post_list, stem):
 def add_to_posting(t, doc_num, term_pos, p):
     p.setdefault(t, {})
     test = p[t]
-    if len(test) < 3:
+    if len(test) < 1:
         test[doc_num] = [1, [term_pos]]
     else:
         try:
