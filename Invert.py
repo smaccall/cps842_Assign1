@@ -316,16 +316,18 @@ class PorterStemmer:
         self.step5()
         return self.b[self.k0:self.k+1]
 
-def add_to_dictionary(x, d, s, doc_num, term_pos, post_list, stem):
+def add_to_dictionary(x, d, s, doc_num, term_pos, post_list, stem, w, is_title):
     temp_list = x.split()
     if len(s) > 0:
         for word in temp_list:
-            if not(word in s):
-                term = word.strip(punctuation)
-                term = re.sub(r'[^\w\-]', '', term)
-                if not (term.isspace() or len(term) < 1):
+            term = word.strip(punctuation)
+            term = re.sub(r'[^\w\-]', '', term)
+            if not (term.isspace() or len(term) < 1):
+                w = add_to_list(doc_num, term, w, is_title)
+                if not(word in s):
                     if stem:
                         term = stemming_process(term)
+                    term = term.lower()
                     d[term] = d.get(term, 0) + 1
                     post_list = add_to_posting(term, doc_num, term_pos, post_list)
                     term_pos += 1
@@ -333,8 +335,9 @@ def add_to_dictionary(x, d, s, doc_num, term_pos, post_list, stem):
         for word in temp_list:
             term = word.strip(punctuation)
             term = re.sub(r'[^\w\-]', '', term)
-            term = term.lower()
             if not (term.isspace() or len(term) < 1):
+                w = add_to_list(doc_num, term, w, is_title)
+                term = term.lower()
                 term = stemming_process(term)
                 d[term] = d.get(term, 0) + 1
                 post_list = add_to_posting(term, doc_num, term_pos, post_list)
@@ -343,12 +346,31 @@ def add_to_dictionary(x, d, s, doc_num, term_pos, post_list, stem):
         for word in temp_list:
             term = word.strip(punctuation)
             term = re.sub(r'[^\w\-]', '', term)
-            term = term.lower()
             if not(term.isspace() or len(term) < 1):
+                w = add_to_list(doc_num, term, w, is_title)
+                term = term.lower()
                 d[term] = d.get(term, 0) + 1
                 post_list = add_to_posting(term, doc_num, term_pos, post_list)
                 term_pos += 1
-    return d, term_pos, post_list
+    return d, term_pos, post_list, w
+
+def add_to_list(doc_num, term, w, is_title):
+    w.setdefault(doc_num, [[], []])
+    if is_title:
+        term_list = w[doc_num][0]
+        if len(term_list) < 1:
+            term_list = [term]
+        else:
+            term_list.append(term)
+        w[doc_num][0] = term_list
+    else:
+        term_list = w[doc_num][1]
+        if len(term_list) < 1:
+            term_list = [term]
+        else:
+            term_list.append(term)
+        w[doc_num][1] = term_list
+    return w
 
 # need to add document frequency as well to list
 def add_to_posting(t, doc_num, term_pos, p):
@@ -377,33 +399,41 @@ def assemble_position_list():
 def read_file_by_line(stem):
     d = {}
     p = {}
+    w = {}
     s_w_terms = use_stop_word()
     file: TextIO = open("cacm.all")
     extract_text = False
+    title = False
     doc_num = 0
     term_place = 0
     for x in file:
         if x[0:2] == ".W":
             extract_text = True
+            title = False
         elif x[0:2] == ".T":
             extract_text = True
+            title = True
         elif x[0:2] == ".A":
             extract_text = False
+            title = False
         elif x[0:2] == ".B":
             extract_text = False
+            title = False
         elif x[0:2] == ".I":
             term_place = 0
             doc_num = x.strip(x[0:3])
             doc_num = doc_num.strip("\n")
             extract_text = False
+            title = False
         elif x.strip('\n ') in (".X", ".C", ".K", ".N"):
             extract_text = False
+            title = False
         else:
             if extract_text:
                 x = x.strip("\n")
-                d, term_place, p = add_to_dictionary(x, d, s_w_terms, doc_num, term_place, p, stem)
+                d, term_place, p, w = add_to_dictionary(x, d, s_w_terms, doc_num, term_place, p, stem, w, title)
     file.close()
-    return d, p
+    return d, p, w
 
 def use_stop_word():
     term: str = input("Use Stop Words enter yes: ")
@@ -437,8 +467,9 @@ def use_stemming():
 
 if __name__ == "__main__":
     use_stem = use_stemming()
-    diction, posting_list_unorganized = read_file_by_line(use_stem)
+    diction, posting_list_unorganized, word_position_in_doc = read_file_by_line(use_stem)
     dictionary = dict(sorted(diction.items(), key=operator.itemgetter(0)))
     posting_list = dict(sorted(posting_list_unorganized.items(), key=operator.itemgetter(0)))
     pickle_file("dictionary.pickle", dictionary)
     pickle_file("posting.pickle", posting_list)
+    pickle_file("document_words.pickle", word_position_in_doc)
