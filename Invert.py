@@ -323,24 +323,24 @@ def add_to_dictionary(x, d, s, doc_num, term_pos, post_list, stem, w, is_title):
             term = word.strip(punctuation)
             term = re.sub(r'[^\w\-]', '', term)
             if not (term.isspace() or len(term) < 1):
-                w = add_to_list(doc_num, term, w, is_title)
-                if not(word in s):
+                term = term.lower()
+                if not(term in s):
                     if stem:
                         term = stemming_process(term)
-                    term = term.lower()
                     d[term] = d.get(term, 0) + 1
                     post_list = add_to_posting(term, doc_num, term_pos, post_list)
+                    w = add_to_list(doc_num, term, w, is_title)
                     term_pos += 1
     elif stem:
         for word in temp_list:
             term = word.strip(punctuation)
             term = re.sub(r'[^\w\-]', '', term)
             if not (term.isspace() or len(term) < 1):
-                w = add_to_list(doc_num, term, w, is_title)
                 term = term.lower()
                 term = stemming_process(term)
                 d[term] = d.get(term, 0) + 1
                 post_list = add_to_posting(term, doc_num, term_pos, post_list)
+                w = add_to_list(doc_num, term, w, is_title)
                 term_pos += 1
     else:
         for word in temp_list:
